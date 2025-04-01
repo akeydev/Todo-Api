@@ -24,8 +24,7 @@ use Doctrine\ORM\Mapping as ORM;
         new GetCollection(
             provider: GetTodoProvider::class,
             paginationItemsPerPage: 10,
-            paginationClientItemsPerPage: true,
-            paginationClientEnabled: true,
+            paginationClientItemsPerPage: true
           ),
         new Post(processor: TodoPostProcessor::class, input: CreateTodoDto::class, 
         output: ReturnTodoDto::class),
