@@ -41,18 +41,17 @@ class GetTodoProvider implements ProviderInterface
 
             if (isset($context['filters'])) {
                 foreach ($context['filters'] as $field => $value) {
-                    if ($field === 'page') {
+                    if ($field === 'page' || $field === 'itemsPerPage' || $field === 'pagination') {
                         continue;
                     }
-                    $queryBuilder->andWhere(sprintf('t.%s = :%s', $field, $field))
-                        ->setParameter($field, $value);
+                    $queryBuilder->andWhere(sprintf('t.%s like :%s', $field, $field))
+                        ->setParameter($field, '%' . $value . '%');
                 }
             }
-            
-            $page = $context['pagination']['page'] ?? 1;
-            $itemsPerPage = $context['pagination']['itemsPerPage'] ?? 10;
-            
-
+           
+            $page = $context['filters']['page'] ?? 1;
+            $itemsPerPage = $context['filters']['itemsPerPage'] ?? 10;
+           
             $queryBuilder->addCriteria(
                     Criteria::create()
                         ->setFirstResult(($page - 1) * $itemsPerPage)
