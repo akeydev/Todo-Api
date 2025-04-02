@@ -10,6 +10,8 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use App\Dto\CreateTodoDto;
 use App\Dto\ReturnTodoDto;
 use App\Dto\UpdateTodoDto;
@@ -26,8 +28,27 @@ use Doctrine\ORM\Mapping as ORM;
             paginationItemsPerPage: 10,
             paginationClientItemsPerPage: true
           ),
-        new Post(processor: TodoPostProcessor::class, input: CreateTodoDto::class, 
-        output: ReturnTodoDto::class),
+        new Post(
+            openapi: new Operation(
+                responses: [
+                    '200' => new Response(
+                        description: 'Ok',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 1,
+                                    'title' => 'Sample Todo',
+                                    'description' => 'This is a sample todo item.'
+                                ]
+                            ]
+                        ])
+                    )
+                ]
+            ),
+            processor: TodoPostProcessor::class,
+            input: CreateTodoDto::class, 
+            output: ReturnTodoDto::class,
+        ),
         new Put(
             processor: TodoPostProcessor::class,
             input: UpdateTodoDto::class,

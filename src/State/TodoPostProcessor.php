@@ -5,13 +5,14 @@ namespace App\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\State\ProcessorInterface;
 use App\Dto\ReturnTodoDto;
-use App\Dto\TodoRepresentation;
 use App\Dto\UpdateTodoDto;
 use App\Entity\Todo;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class TodoPostProcessor implements ProcessorInterface
 {
@@ -24,7 +25,8 @@ class TodoPostProcessor implements ProcessorInterface
         $this->security = $security;
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ReturnTodoDto|null
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ReturnTodoDto|null|JsonResponse
+    
     {
         if($operation instanceof Post) {
             $todo = new Todo();
@@ -39,13 +41,16 @@ class TodoPostProcessor implements ProcessorInterface
         }
 
         if($operation instanceof Put && $data instanceof UpdateTodoDto && isset($uriVariables['id'])){
-            $todo = $this->entityManager->getRepository(Todo::class)->findOneBy(['id' => $uriVariables['id']]);
+            $todo = $this->entityManager->getRepository(Todo::class)->find($uriVariables['id']);
             $todo->setTitle($data->title);
             $todo->setDescription($data->description);
             $todo->setStatus($data->status);
             $this->entityManager->persist($todo);
             $this->entityManager->flush();
-            return $this->ReturnData($todo);
+            return new JsonResponse([
+                'status' => '200',
+                'message' => 'Todo updated successfully',
+            ], 200);
         }
         return null;
     }
