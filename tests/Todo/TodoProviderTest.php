@@ -4,36 +4,44 @@ namespace App\Tests;
 
 use ApiPlatform\Doctrine\Orm\Paginator;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\GraphQl\Operation;
+use ApiPlatform\Metadata\Operation\Factory\OperationMetadataFactoryInterface;
 use App\Entity\User;
 use App\State\GetTodoProvider;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class TodoProviderTest extends KernelTestCase
 {
-    public function testContainerService(): void
+    private $security;
+
+    protected function setUp(): void
     {
         self::bootKernel();
-        $container = static::getContainer();
-        $this->assertNotNull($container);
+        $this->security = $this->createMock(Security::class);
+        static::getContainer()->set('security.helper', $this->security);
     }
 
     public function testGetTodoProviderService(): void
     {
-        self::bootKernel();
         
-        $container = static::getContainer();
-        $security = $container->get('security.helper');
-        
-        $operation = $container->get('api_platform.operation.get_collection');
-        $this->assertInstanceOf(GetCollection::class, $operation);
+        $operation = $this->createMock(Operation::class);
 
-        $user = $security->getUser();
-        $this->assertInstanceOf(User::class, $user);
-        
-        $getTodoProvider = $container->get(GetTodoProvider::class);
+        $getTodoProvider = static::getContainer()->get(GetTodoProvider::class);
+
+        $user = new User();
+        $this->security
+            ->expects($this->once())
+            ->method('getUser')
+            ->willReturn($user);
+            
+        $this->security->method('getUser')->willReturn($user);
+
         $this->assertInstanceOf(GetTodoProvider::class, $getTodoProvider);
-
-        $result = $getTodoProvider->provide();
+        
+        $context['filters'] = ['title' => 'en'];
+        $uriVariables = [];
+        $result = $getTodoProvider->provide($operation, $uriVariables, $context);
         $this->assertInstanceOf(Paginator::class, $result);
     }
 }
