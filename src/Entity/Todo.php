@@ -54,7 +54,22 @@ use Doctrine\ORM\Mapping as ORM;
             input: UpdateTodoDto::class,
             security: "is_granted('ROLE_ADMIN') or object.createdBy == user",
             securityMessage: "Sorry, You do not have info permissions.",
-            output: ReturnTodoDto::class
+            output: ReturnTodoDto::class,
+            openapi: new Operation(
+                responses: [
+                    '200' => new Response(
+                        description: 'Ok',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'status' => 200,
+                                    'message' => 'Todo updated successfully',
+                                ]
+                            ]
+                        ])
+                    )
+                ]
+            )
         ),
         new Delete(security: "is_granted('ROLE_ADMIN') or object.createdBy == user"),
         new Get(security: "is_granted('ROLE_ADMIN') or object.createdBy == user",
