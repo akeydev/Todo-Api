@@ -52,8 +52,6 @@ use Doctrine\ORM\Mapping as ORM;
         new Put(
             processor: TodoPostProcessor::class,
             input: UpdateTodoDto::class,
-            security: "is_granted('ROLE_ADMIN') or object.createdBy == user",
-            securityMessage: "Sorry, You do not have info permissions.",
             output: ReturnTodoDto::class,
             openapi: new Operation(
                 responses: [

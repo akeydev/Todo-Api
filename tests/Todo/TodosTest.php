@@ -25,11 +25,8 @@ class TodosTest  extends ApiTestCase
         $response = static::createClient()->request('GET', '/api/todos',[
             'auth_bearer' => $this->token
         ]);
-
         $this->assertResponseIsSuccessful();
-
         $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
-
         $this->assertJsonContains(['@context' => '/api/contexts/Todo',
         '@id' => '/api/todos',
         '@type' => 'Collection',
@@ -40,7 +37,6 @@ class TodosTest  extends ApiTestCase
         ],]);
 
         $this->assertCount(10, $response->toArray()['member']);
-
         $this->assertMatchesResourceCollectionJsonSchema(Todo::class);
     }
 
@@ -57,10 +53,8 @@ class TodosTest  extends ApiTestCase
             'email' => $email,
             'password' => '12345',
         ]]);
-
         $this->assertResponseIsSuccessful();
         $data = $response->toArray();
-
         return $data['token'];
     }
 
@@ -156,11 +150,30 @@ class TodosTest  extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(204);
 
-        // Verify the item no longer exists
         $response = static::createClient()->request('GET', '/api/todos/1', [
             'auth_bearer' => $token,
         ]);
-
         $this->assertResponseStatusCodeSame(404);
+    }
+
+    public function testUpdateTodoCreatedByAnotherUser(): void
+    {
+        $response = static::createClient()->request('PUT', '/api/todos/56', [
+            'auth_bearer' => $this->token,
+            'headers' => [
+                'Content-Type' => 'application/ld+json',
+            ],
+            'json' => [
+                'title' => 'Updated Todo by Another User',
+                'description' => 'This is an attempt to update another user\'s todo.',
+                'status' => 'done',
+            ],
+        ]);
+
+        // Assert that the update is forbidden
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertJsonContains([
+            'message' => 'Sorry, You do not have info permissions.',
+        ]);
     }
 }

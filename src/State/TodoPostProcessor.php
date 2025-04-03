@@ -42,6 +42,17 @@ class TodoPostProcessor implements ProcessorInterface
 
         if($operation instanceof Put && $data instanceof UpdateTodoDto && isset($uriVariables['id'])){
             $todo = $this->entityManager->getRepository(Todo::class)->find($uriVariables['id']);
+            if (!$todo) {
+                return new JsonResponse([
+                    'message' => 'Todo not found',
+                ], 404);
+            }
+            if (!$this->security->isGranted('ROLE_ADMIN') && $todo->getCreatedBy() !== $this->security->getUser()) {
+                return new JsonResponse([
+                    'message' => 'Sorry, You do not have info permissions.',
+                ], 403);
+            }
+            
             $todo->setTitle($data->title);
             $todo->setDescription($data->description);
             $todo->setStatus($data->status);
