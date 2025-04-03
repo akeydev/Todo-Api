@@ -10,6 +10,7 @@ use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
  */
 final class UserFactory extends PersistentProxyObjectFactory
 {
+    private static int $userCount = 0;
     /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#factories-as-services
      *
@@ -30,12 +31,15 @@ final class UserFactory extends PersistentProxyObjectFactory
      * @todo add your default values here
      */
     protected function defaults(): array|callable
-    {
+    {   
+        self::$userCount++;
+
         return [
             'email' => self::faker()->email(),
             'password' => '$2y$13$YkoQuevAnKLkbItVowZ/SOmEuPzWi1XpLMGL8dtAc.56L9OEpUn/W',
-            'roles' => [],
+            'roles' =>  self::$userCount%2 === 1 ? [] : ['ROLE_ADMIN'],
         ];
+        
     }
 
     /**

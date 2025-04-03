@@ -9,7 +9,7 @@ use App\Factory\TodoFactory;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
-class TodosTest  extends ApiTestCase
+class TodosAdminTest  extends ApiTestCase
 {
     use ResetDatabase, Factories;
     public $token;
@@ -33,7 +33,7 @@ class TodosTest  extends ApiTestCase
         $this->assertJsonContains(['@context' => '/api/contexts/Todo',
         '@id' => '/api/todos',
         '@type' => 'Collection',
-        'totalItems' => 50,
+        'totalItems' => 100,
         'view' => [
             "@id" => "/api/todos?page=1",
             "@type"=> "PartialCollectionView",
@@ -47,11 +47,10 @@ class TodosTest  extends ApiTestCase
 
     protected function getToken($body = []): string
     {
-        $user = static::getContainer()->get('doctrine')->getRepository(User::class)->findOneUserByRole(false);
+        $user = static::getContainer()->get('doctrine')->getRepository(User::class)->findOneUserByRole();
         if (!$user) {
             throw new \RuntimeException('No users found in the database.');
         }
-
         $email = $user->getEmail();
         $response = static::createClient()->request('POST', '/auth', ['json' => $body ?: [
             'email' => $email,
