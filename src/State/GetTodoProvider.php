@@ -31,8 +31,7 @@ class GetTodoProvider implements ProviderInterface
         /** @var User */
         $user = $this->security->getUser();
         Assert::isInstanceOf($user, User::class);
-        Assert::isInstanceOf($operation, GetCollection::class);
-
+        
         $repository = $this->entityManager->getRepository(Todo::class);
         if ($user && in_array('ROLE_ADMIN', $user->getRoles())) {
             $queryBuilder = $repository->createQueryBuilder('t');
